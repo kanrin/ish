@@ -43,7 +43,13 @@ _xaddr .req x3
     cmp x8, (0x1000-(\size/8))
     b.hi crosspage_load_\id
     and w8, _addr, 0xfffff000
-    str w8, [_tlb, (-TLB_entries+TLB_dirty_page)]
+    // NOTE: tlb->dirty_page is deliberately NOT maintained here (M1/A1).
+    // This store used to run on the hottest path (every guest load/store) but
+    // nothing in the app ever reads the value: the only consumers are the
+    // Linux-only development tools tools/ptraceomatic.c and
+    // tools/unicornomatic.c, which are not built for darwin/iOS.
+    // tlb->dirty_page is still initialized/reset in emu/tlb.c and set on the
+    // (cold) miss path, so those tools only lose per-access granularity.
     ubfx x9, _xaddr, 12, 10
     eor x9, x9, _xaddr, lsr 22
     lsl x9, x9, 4

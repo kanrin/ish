@@ -47,7 +47,10 @@
     .else
         cmpl TLB_ENTRY_page_if_writable(%_tlb,%r14), %r15d
     .endif
-    movl %r15d, -TLB_entries+TLB_dirty_page(%_tlb)
+    // NOTE: tlb->dirty_page is deliberately NOT maintained here (M1/A1). See the
+    // matching comment in asbestos/gadgets-aarch64/gadgets.h: the store was on
+    // the hottest path but its only readers are the Linux-only dev tools
+    // (tools/ptraceomatic.c, tools/unicornomatic.c).
     jne handle_miss_\id
     addq TLB_ENTRY_data_minus_addr(%_tlb,%r14), %_addrq
 back_\id :
