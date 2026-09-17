@@ -345,7 +345,7 @@ error:
     return err;
 }
 
-dword_t sys_waitid(int_t idtype, pid_t_ id, addr_t info_addr, int_t options) {
+dword_t sys_waitid(int_t idtype, pid_t_ id, uaddr_t info_addr, int_t options) {
     STRACE("waitid(%d, %d, %#x, %#x)", idtype, id, info_addr, options);
     struct siginfo_ info = {};
     int_t res = do_wait(idtype, id, &info, NULL, options);
@@ -356,7 +356,7 @@ dword_t sys_waitid(int_t idtype, pid_t_ id, addr_t info_addr, int_t options) {
     return 0;
 }
 
-dword_t sys_wait4(pid_t_ id, addr_t status_addr, dword_t options, addr_t rusage_addr) {
+dword_t sys_wait4(pid_t_ id, uaddr_t status_addr, dword_t options, uaddr_t rusage_addr) {
     STRACE("wait4(%d, %#x, %#x, %#x)", id, status_addr, options, rusage_addr);
     if (options & WNOWAIT_)
         return _EINVAL;
@@ -386,6 +386,6 @@ dword_t sys_wait4(pid_t_ id, addr_t status_addr, dword_t options, addr_t rusage_
     return info.child.pid;
 }
 
-dword_t sys_waitpid(pid_t_ pid, addr_t status_addr, dword_t options) {
+dword_t sys_waitpid(pid_t_ pid, uaddr_t status_addr, dword_t options) {
     return sys_wait4(pid, status_addr, options, 0);
 }

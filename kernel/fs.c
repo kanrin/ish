@@ -39,10 +39,10 @@ int access_check(struct statbuf *stat, int check) {
 // TODO ENAMETOOLONG
 
 #define AT_EACCESS_ 0x200
-dword_t sys_access(addr_t path_addr, dword_t mode) {
+dword_t sys_access(uaddr_t path_addr, dword_t mode) {
     return sys_faccessat(AT_FDCWD_, path_addr, mode, 0);
 }
-dword_t sys_faccessat(fd_t at_f, addr_t path_addr, mode_t_ mode, dword_t flags) {
+dword_t sys_faccessat(fd_t at_f, uaddr_t path_addr, mode_t_ mode, dword_t flags) {
     char path[MAX_PATH];
     if (user_read_string(path_addr, path, sizeof(path)))
         return _EFAULT;
@@ -64,7 +64,7 @@ dword_t sys_faccessat(fd_t at_f, addr_t path_addr, mode_t_ mode, dword_t flags) 
     return err;
 }
 
-fd_t sys_openat(fd_t at_f, addr_t path_addr, dword_t flags, mode_t_ mode) {
+fd_t sys_openat(fd_t at_f, uaddr_t path_addr, dword_t flags, mode_t_ mode) {
     char path[MAX_PATH];
     if (user_read_string(path_addr, path, sizeof(path)))
         return _EFAULT;
@@ -82,11 +82,11 @@ fd_t sys_openat(fd_t at_f, addr_t path_addr, dword_t flags, mode_t_ mode) {
     return f_install(fd, flags);
 }
 
-fd_t sys_open(addr_t path_addr, dword_t flags, mode_t_ mode) {
+fd_t sys_open(uaddr_t path_addr, dword_t flags, mode_t_ mode) {
     return sys_openat(AT_FDCWD_, path_addr, flags, mode);
 }
 
-dword_t sys_readlinkat(fd_t at_f, addr_t path_addr, addr_t buf_addr, dword_t bufsize) {
+dword_t sys_readlinkat(fd_t at_f, uaddr_t path_addr, uaddr_t buf_addr, dword_t bufsize) {
     char path[MAX_PATH];
     if (user_read_string(path_addr, path, sizeof(path)))
         return _EFAULT;
@@ -104,11 +104,11 @@ dword_t sys_readlinkat(fd_t at_f, addr_t path_addr, addr_t buf_addr, dword_t buf
     return size;
 }
 
-dword_t sys_readlink(addr_t path_addr, addr_t buf_addr, dword_t bufsize) {
+dword_t sys_readlink(uaddr_t path_addr, uaddr_t buf_addr, dword_t bufsize) {
     return sys_readlinkat(AT_FDCWD_, path_addr, buf_addr, bufsize);
 }
 
-dword_t sys_linkat(fd_t src_at_f, addr_t src_addr, fd_t dst_at_f, addr_t dst_addr) {
+dword_t sys_linkat(fd_t src_at_f, uaddr_t src_addr, fd_t dst_at_f, uaddr_t dst_addr) {
     char src[MAX_PATH];
     if (user_read_string(src_addr, src, sizeof(src)))
         return _EFAULT;
@@ -125,12 +125,12 @@ dword_t sys_linkat(fd_t src_at_f, addr_t src_addr, fd_t dst_at_f, addr_t dst_add
     return generic_linkat(src_at, src, dst_at, dst);
 }
 
-dword_t sys_link(addr_t src_addr, addr_t dst_addr) {
+dword_t sys_link(uaddr_t src_addr, uaddr_t dst_addr) {
     return sys_linkat(AT_FDCWD_, src_addr, AT_FDCWD_, dst_addr);
 }
 
 #define AT_REMOVEDIR_ 0x200
-dword_t sys_unlinkat(fd_t at_f, addr_t path_addr, int_t flags) {
+dword_t sys_unlinkat(fd_t at_f, uaddr_t path_addr, int_t flags) {
     char path[MAX_PATH];
     if (user_read_string(path_addr, path, sizeof(path)))
         return _EFAULT;
@@ -144,11 +144,11 @@ dword_t sys_unlinkat(fd_t at_f, addr_t path_addr, int_t flags) {
         return generic_unlinkat(at, path);
 }
 
-dword_t sys_unlink(addr_t path_addr) {
+dword_t sys_unlink(uaddr_t path_addr) {
     return sys_unlinkat(AT_FDCWD_, path_addr, 0);
 }
 
-dword_t sys_renameat2(fd_t src_at_f, addr_t src_addr, fd_t dst_at_f, addr_t dst_addr, int_t flags) {
+dword_t sys_renameat2(fd_t src_at_f, uaddr_t src_addr, fd_t dst_at_f, uaddr_t dst_addr, int_t flags) {
     if (flags != 0)
         return _EINVAL;
     char src[MAX_PATH];
@@ -167,15 +167,15 @@ dword_t sys_renameat2(fd_t src_at_f, addr_t src_addr, fd_t dst_at_f, addr_t dst_
     return generic_renameat(src_at, src, dst_at, dst);
 }
 
-dword_t sys_renameat(fd_t src_at_f, addr_t src_addr, fd_t dst_at_f, addr_t dst_addr) {
+dword_t sys_renameat(fd_t src_at_f, uaddr_t src_addr, fd_t dst_at_f, uaddr_t dst_addr) {
     return sys_renameat2(src_at_f, src_addr, dst_at_f, dst_addr, 0);
 }
 
-dword_t sys_rename(addr_t src_addr, addr_t dst_addr) {
+dword_t sys_rename(uaddr_t src_addr, uaddr_t dst_addr) {
     return sys_renameat2(AT_FDCWD_, src_addr, AT_FDCWD_, dst_addr, 0);
 }
 
-dword_t sys_symlinkat(addr_t target_addr, fd_t at_f, addr_t link_addr) {
+dword_t sys_symlinkat(uaddr_t target_addr, fd_t at_f, uaddr_t link_addr) {
     char target[MAX_PATH];
     if (user_read_string(target_addr, target, sizeof(target)))
         return _EFAULT;
@@ -189,11 +189,11 @@ dword_t sys_symlinkat(addr_t target_addr, fd_t at_f, addr_t link_addr) {
     return generic_symlinkat(target, at, link);
 }
 
-dword_t sys_symlink(addr_t target_addr, addr_t link_addr) {
+dword_t sys_symlink(uaddr_t target_addr, uaddr_t link_addr) {
     return sys_symlinkat(target_addr, AT_FDCWD_, link_addr);
 }
 
-dword_t sys_mknodat(fd_t at_f, addr_t path_addr, mode_t_ mode, dev_t_ dev) {
+dword_t sys_mknodat(fd_t at_f, uaddr_t path_addr, mode_t_ mode, dev_t_ dev) {
     char path[MAX_PATH];
     if (user_read_string(path_addr, path, sizeof(path)))
         return _EFAULT;
@@ -205,7 +205,7 @@ dword_t sys_mknodat(fd_t at_f, addr_t path_addr, mode_t_ mode, dev_t_ dev) {
     return generic_mknodat(at, path, mode, dev);
 }
 
-dword_t sys_mknod(addr_t path_addr, mode_t_ mode, dev_t_ dev) {
+dword_t sys_mknod(uaddr_t path_addr, mode_t_ mode, dev_t_ dev) {
     return sys_mknodat(AT_FDCWD_, path_addr, mode, dev);
 }
 
@@ -236,7 +236,7 @@ static ssize_t sys_read_buf(fd_t fd_no, void *buf, size_t size) {
     return res;
 }
 
-dword_t sys_read(fd_t fd_no, addr_t buf_addr, dword_t size) {
+dword_t sys_read(fd_t fd_no, uaddr_t buf_addr, dword_t size) {
     STRACE("read(%d, 0x%x, %d)", fd_no, buf_addr, size);
     char *buf = (char *) malloc(size);
     if (buf == NULL)
@@ -269,7 +269,7 @@ static ssize_t sys_write_buf(fd_t fd_no, void *buf, size_t size) {
     return res;
 }
 
-dword_t sys_write(fd_t fd_no, addr_t buf_addr, dword_t size) {
+dword_t sys_write(fd_t fd_no, uaddr_t buf_addr, dword_t size) {
     // FIXME this is a DOS vector, should ideally use vectorized I/O
     char *buf = malloc(size);
     if (buf == NULL)
@@ -314,7 +314,7 @@ static ssize_t iovec_size(struct iovec_ *iovec, unsigned iovec_count) {
     return size;
 }
 
-dword_t sys_readv(fd_t fd_no, addr_t iovec_addr, dword_t iovec_count) {
+dword_t sys_readv(fd_t fd_no, uaddr_t iovec_addr, dword_t iovec_count) {
     STRACE("readv(%d, %#x, %d)", fd_no, iovec_addr, iovec_count);
     struct iovec_ *iovec = read_iovec(iovec_addr, iovec_count);
     if (IS_ERR(iovec))
@@ -348,7 +348,7 @@ error:
     return res;
 }
 
-dword_t sys_writev(fd_t fd_no, addr_t iovec_addr, dword_t iovec_count) {
+dword_t sys_writev(fd_t fd_no, uaddr_t iovec_addr, dword_t iovec_count) {
     STRACE("writev(%d, %#x, %d)", fd_no, iovec_addr, iovec_count);
     struct iovec_ *iovec = read_iovec(iovec_addr, iovec_count);
     if (IS_ERR(iovec))
@@ -381,7 +381,7 @@ error:
     return res;
 }
 
-dword_t sys__llseek(fd_t f, dword_t off_high, dword_t off_low, addr_t res_addr, dword_t whence) {
+dword_t sys__llseek(fd_t f, dword_t off_high, dword_t off_low, uaddr_t res_addr, dword_t whence) {
     struct fd *fd = f_get(f);
     if (fd == NULL)
         return _EBADF;
@@ -414,7 +414,7 @@ dword_t sys_lseek(fd_t f, dword_t off, dword_t whence) {
     return res;
 }
 
-dword_t sys_pread(fd_t f, addr_t buf_addr, dword_t size, off_t_ off) {
+dword_t sys_pread(fd_t f, uaddr_t buf_addr, dword_t size, off_t_ off) {
     STRACE("pread(%d, 0x%x, %d, %d)", f, buf_addr, size, off);
     struct fd *fd = f_get(f);
     if (fd == NULL)
@@ -451,7 +451,7 @@ out:
     return res;
 }
 
-dword_t sys_pwrite(fd_t f, addr_t buf_addr, dword_t size, off_t_ off) {
+dword_t sys_pwrite(fd_t f, uaddr_t buf_addr, dword_t size, off_t_ off) {
     STRACE("pwrite(%d, 0x%x, %d, %d)", f, buf_addr, size, off);
     struct fd *fd = f_get(f);
     if (fd == NULL)
@@ -534,7 +534,7 @@ dword_t sys_ioctl(fd_t f, dword_t cmd, dword_t arg) {
     return fd_ioctl(fd, cmd, arg);
 }
 
-dword_t sys_getcwd(addr_t buf_addr, dword_t size) {
+dword_t sys_getcwd(uaddr_t buf_addr, dword_t size) {
     STRACE("getcwd(%#x, %#x)", buf_addr, size);
     lock(&current->fs->lock);
     struct fd *wd = current->fs->pwd;
@@ -577,7 +577,7 @@ void fs_chdir(struct fs_info *fs, struct fd *fd) {
     unlock(&fs->lock);
 }
 
-dword_t sys_chdir(addr_t path_addr) {
+dword_t sys_chdir(uaddr_t path_addr) {
     char path[MAX_PATH];
     if (user_read_string(path_addr, path, sizeof(path)))
         return _EFAULT;
@@ -600,7 +600,7 @@ dword_t sys_fchdir(fd_t f) {
     return 0;
 }
 
-dword_t sys_chroot(addr_t path_addr) {
+dword_t sys_chroot(uaddr_t path_addr) {
     char path[MAX_PATH];
     if (user_read_string(path_addr, path, sizeof(path)))
         return _EFAULT;
@@ -681,7 +681,7 @@ static int_t statfs64_mount(struct mount *mount, addr_t buf_addr) {
     return 0;
 }
 
-dword_t sys_statfs(addr_t path_addr, addr_t buf_addr) {
+dword_t sys_statfs(uaddr_t path_addr, uaddr_t buf_addr) {
     char path_raw[MAX_PATH];
     if (user_read_string(path_addr, path_raw, sizeof(path_raw)))
         return _EFAULT;
@@ -696,7 +696,7 @@ dword_t sys_statfs(addr_t path_addr, addr_t buf_addr) {
     return err;
 }
 
-dword_t sys_statfs64(addr_t path_addr, dword_t buf_size, addr_t buf_addr) {
+dword_t sys_statfs64(uaddr_t path_addr, dword_t buf_size, uaddr_t buf_addr) {
     char path_raw[MAX_PATH];
     if (user_read_string(path_addr, path_raw, sizeof(path_raw)))
         return _EFAULT;
@@ -713,11 +713,11 @@ dword_t sys_statfs64(addr_t path_addr, dword_t buf_size, addr_t buf_addr) {
     return err;
 }
 
-dword_t sys_fstatfs(fd_t f, addr_t buf_addr) {
+dword_t sys_fstatfs(fd_t f, uaddr_t buf_addr) {
     return statfs_mount(f_get(f)->mount, buf_addr);
 }
 
-dword_t sys_fstatfs64(fd_t f, addr_t buf_addr) {
+dword_t sys_fstatfs64(fd_t f, uaddr_t buf_addr) {
     return statfs64_mount(f_get(f)->mount, buf_addr);
 }
 
@@ -747,7 +747,7 @@ static dword_t sys_utime_common(fd_t at_f, addr_t path_addr, struct timespec ati
     return generic_utime(at, path_addr != 0 ? path : ".", atime, mtime, follow_links);
 }
 
-dword_t sys_utimensat(fd_t at_f, addr_t path_addr, addr_t times_addr, dword_t flags) {
+dword_t sys_utimensat(fd_t at_f, uaddr_t path_addr, uaddr_t times_addr, dword_t flags) {
     struct timespec atime;
     struct timespec mtime;
     if (times_addr == 0) {
@@ -762,7 +762,7 @@ dword_t sys_utimensat(fd_t at_f, addr_t path_addr, addr_t times_addr, dword_t fl
     return sys_utime_common(at_f, path_addr, atime, mtime, flags);
 }
 
-dword_t sys_utimes(addr_t path_addr, addr_t times_addr) {
+dword_t sys_utimes(uaddr_t path_addr, uaddr_t times_addr) {
     struct timespec atime;
     struct timespec mtime;
     if (times_addr == 0) {
@@ -777,7 +777,7 @@ dword_t sys_utimes(addr_t path_addr, addr_t times_addr) {
     return sys_utime_common(AT_FDCWD_, path_addr, atime, mtime, 0);
 }
 
-dword_t sys_utime(addr_t path_addr, addr_t times_addr) {
+dword_t sys_utime(uaddr_t path_addr, uaddr_t times_addr) {
     struct timespec atime;
     struct timespec mtime;
     if (times_addr == 0) {
@@ -812,7 +812,7 @@ dword_t sys_fchmod(fd_t f, dword_t mode) {
     return generic_fsetattr(fd, make_attr(mode, mode));
 }
 
-dword_t sys_fchmodat(fd_t at_f, addr_t path_addr, dword_t mode) {
+dword_t sys_fchmodat(fd_t at_f, uaddr_t path_addr, dword_t mode) {
     char path[MAX_PATH];
     if (user_read_string(path_addr, path, sizeof(path)))
         return _EFAULT;
@@ -824,7 +824,7 @@ dword_t sys_fchmodat(fd_t at_f, addr_t path_addr, dword_t mode) {
     return generic_setattrat(at, path, make_attr(mode, mode), true);
 }
 
-dword_t sys_chmod(addr_t path_addr, dword_t mode) {
+dword_t sys_chmod(uaddr_t path_addr, dword_t mode) {
     return sys_fchmodat(AT_FDCWD_, path_addr, mode);
 }
 
@@ -847,7 +847,7 @@ dword_t sys_fchown32(fd_t f, uid_t_ owner, uid_t_ group) {
     return 0;
 }
 
-dword_t sys_fchownat(fd_t at_f, addr_t path_addr, dword_t owner, dword_t group, int flags) {
+dword_t sys_fchownat(fd_t at_f, uaddr_t path_addr, dword_t owner, dword_t group, int flags) {
     char path[MAX_PATH];
     if (user_read_string(path_addr, path, sizeof(path)))
         return _EFAULT;
@@ -870,15 +870,15 @@ dword_t sys_fchownat(fd_t at_f, addr_t path_addr, dword_t owner, dword_t group, 
     return 0;
 }
 
-dword_t sys_chown32(addr_t path_addr, uid_t_ owner, uid_t_ group) {
+dword_t sys_chown32(uaddr_t path_addr, uid_t_ owner, uid_t_ group) {
     return sys_fchownat(AT_FDCWD_, path_addr, owner, group, 0);
 }
 
-dword_t sys_lchown(addr_t path_addr, uid_t_ owner, uid_t_ group) {
+dword_t sys_lchown(uaddr_t path_addr, uid_t_ owner, uid_t_ group) {
     return sys_fchownat(AT_FDCWD_, path_addr, owner, group, AT_SYMLINK_NOFOLLOW_);
 }
 
-dword_t sys_truncate64(addr_t path_addr, dword_t size_low, dword_t size_high) {
+dword_t sys_truncate64(uaddr_t path_addr, dword_t size_low, dword_t size_high) {
     off_t_ size = ((qword_t) size_high << 32) | size_low;
     char path[MAX_PATH];
     if (user_read_string(path_addr, path, sizeof(path)))
@@ -909,7 +909,7 @@ dword_t sys_fallocate(fd_t f, dword_t UNUSED(mode), dword_t offset_low, dword_t 
     return 0;
 }
 
-dword_t sys_mkdirat(fd_t at_f, addr_t path_addr, mode_t_ mode) {
+dword_t sys_mkdirat(fd_t at_f, uaddr_t path_addr, mode_t_ mode) {
     char path[MAX_PATH];
     if (user_read_string(path_addr, path, sizeof(path)))
         return _EFAULT;
@@ -922,11 +922,11 @@ dword_t sys_mkdirat(fd_t at_f, addr_t path_addr, mode_t_ mode) {
     return generic_mkdirat(at, path, mode);
 }
 
-dword_t sys_mkdir(addr_t path_addr, mode_t_ mode) {
+dword_t sys_mkdir(uaddr_t path_addr, mode_t_ mode) {
     return sys_mkdirat(AT_FDCWD_, path_addr, mode);
 }
 
-dword_t sys_rmdir(addr_t path_addr) {
+dword_t sys_rmdir(uaddr_t path_addr) {
     char path[MAX_PATH];
     if (user_read_string(path_addr, path, sizeof(path)))
         return _EFAULT;
@@ -945,21 +945,21 @@ dword_t sys_fsync(fd_t f) {
 }
 
 // a few stubs
-dword_t sys_sendfile(fd_t UNUSED(out_fd), fd_t UNUSED(in_fd), addr_t UNUSED(offset_addr), dword_t UNUSED(count)) {
+dword_t sys_sendfile(fd_t UNUSED(out_fd), fd_t UNUSED(in_fd), uaddr_t UNUSED(offset_addr), dword_t UNUSED(count)) {
     return _EINVAL;
 }
-dword_t sys_sendfile64(fd_t UNUSED(out_fd), fd_t UNUSED(in_fd), addr_t UNUSED(offset_addr), dword_t UNUSED(count)) {
+dword_t sys_sendfile64(fd_t UNUSED(out_fd), fd_t UNUSED(in_fd), uaddr_t UNUSED(offset_addr), dword_t UNUSED(count)) {
     return _EINVAL;
 }
-dword_t sys_splice(fd_t UNUSED(in_fd), addr_t UNUSED(in_off_addr), fd_t UNUSED(out_fd), addr_t UNUSED(out_off_addr), dword_t UNUSED(count), dword_t UNUSED(flags)) {
+dword_t sys_splice(fd_t UNUSED(in_fd), uaddr_t UNUSED(in_off_addr), fd_t UNUSED(out_fd), uaddr_t UNUSED(out_off_addr), dword_t UNUSED(count), dword_t UNUSED(flags)) {
     return _EINVAL;
 }
-dword_t sys_copy_file_range(fd_t UNUSED(in_fd), addr_t UNUSED(in_off), fd_t UNUSED(out_fd),
-        addr_t UNUSED(out_off), dword_t UNUSED(len), uint_t UNUSED(flags)) {
+dword_t sys_copy_file_range(fd_t UNUSED(in_fd), uaddr_t UNUSED(in_off), fd_t UNUSED(out_fd),
+        uaddr_t UNUSED(out_off), dword_t UNUSED(len), uint_t UNUSED(flags)) {
     return _EPERM; // good enough for ruby
 }
 
-dword_t sys_xattr_stub(addr_t UNUSED(path_addr), addr_t UNUSED(name_addr),
-        addr_t UNUSED(value_addr), dword_t UNUSED(size), dword_t UNUSED(flags)) {
+dword_t sys_xattr_stub(uaddr_t UNUSED(path_addr), uaddr_t UNUSED(name_addr),
+        uaddr_t UNUSED(value_addr), dword_t UNUSED(size), dword_t UNUSED(flags)) {
     return _ENOTSUP;
 }

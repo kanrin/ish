@@ -32,7 +32,7 @@ struct epoll_event_ {
 #define EPOLLET_ (1 << 31)
 #define EPOLLONESHOT_ (1 << 30)
 
-int_t sys_epoll_ctl(fd_t epoll_f, int_t op, fd_t f, addr_t event_addr) {
+int_t sys_epoll_ctl(fd_t epoll_f, int_t op, fd_t f, uaddr_t event_addr) {
     STRACE("epoll_ctl(%d, %d, %d, %#x)", epoll_f, op, f, event_addr);
     struct fd *epoll = f_get(epoll_f);
     if (epoll == NULL)
@@ -74,7 +74,7 @@ static int epoll_callback(void *context, int types, union poll_fd_info info) {
     return 1;
 }
 
-int_t sys_epoll_wait(fd_t epoll_f, addr_t events_addr, int_t max_events, int_t timeout) {
+int_t sys_epoll_wait(fd_t epoll_f, uaddr_t events_addr, int_t max_events, int_t timeout) {
     STRACE("epoll_wait(%d, %#x, %d, %d)", epoll_f, events_addr, max_events, timeout);
     struct fd *epoll = f_get(epoll_f);
     if (epoll == NULL)
@@ -105,7 +105,7 @@ int_t sys_epoll_wait(fd_t epoll_f, addr_t events_addr, int_t max_events, int_t t
     return res;
 }
 
-int_t sys_epoll_pwait(fd_t epoll_f, addr_t events_addr, int_t max_events, int_t timeout, addr_t sigmask_addr, dword_t sigsetsize) {
+int_t sys_epoll_pwait(fd_t epoll_f, uaddr_t events_addr, int_t max_events, int_t timeout, uaddr_t sigmask_addr, dword_t sigsetsize) {
     sigset_t_ mask;
     if (sigmask_addr != 0) {
         if (sigsetsize != sizeof(sigset_t_))

@@ -101,7 +101,7 @@ static addr_t mmap_common(addr_t addr, dword_t len, dword_t prot, dword_t flags,
     return res;
 }
 
-addr_t sys_mmap2(addr_t addr, dword_t len, dword_t prot, dword_t flags, fd_t fd_no, dword_t offset) {
+uaddr_t sys_mmap2(uaddr_t addr, dword_t len, dword_t prot, dword_t flags, fd_t fd_no, dword_t offset) {
     return mmap_common(addr, len, prot, flags, fd_no, offset << PAGE_BITS);
 }
 
@@ -109,14 +109,14 @@ struct mmap_arg_struct {
     dword_t addr, len, prot, flags, fd, offset;
 };
 
-addr_t sys_mmap(addr_t args_addr) {
+uaddr_t sys_mmap(uaddr_t args_addr) {
     struct mmap_arg_struct args;
     if (user_get(args_addr, args))
         return _EFAULT;
     return mmap_common(args.addr, args.len, args.prot, args.flags, args.fd, args.offset);
 }
 
-int_t sys_munmap(addr_t addr, uint_t len) {
+int_t sys_munmap(uaddr_t addr, uint_t len) {
     STRACE("munmap(0x%x, 0x%x)", addr, len);
     if (PGOFFSET(addr) != 0)
         return _EINVAL;
@@ -133,7 +133,7 @@ int_t sys_munmap(addr_t addr, uint_t len) {
 #define MREMAP_MAYMOVE_ 1
 #define MREMAP_FIXED_ 2
 
-int_t sys_mremap(addr_t addr, dword_t old_len, dword_t new_len, dword_t flags) {
+int_t sys_mremap(uaddr_t addr, dword_t old_len, dword_t new_len, dword_t flags) {
     STRACE("mremap(%#x, %#x, %#x, %d)", addr, old_len, new_len, flags);
     if (PGOFFSET(addr) != 0)
         return _EINVAL;
@@ -177,7 +177,7 @@ int_t sys_mremap(addr_t addr, dword_t old_len, dword_t new_len, dword_t flags) {
     return addr;
 }
 
-int_t sys_mprotect(addr_t addr, uint_t len, int_t prot) {
+int_t sys_mprotect(uaddr_t addr, uint_t len, int_t prot) {
     STRACE("mprotect(0x%x, 0x%x, 0x%x)", addr, len, prot);
     if (PGOFFSET(addr) != 0)
         return _EINVAL;
@@ -190,25 +190,25 @@ int_t sys_mprotect(addr_t addr, uint_t len, int_t prot) {
     return err;
 }
 
-dword_t sys_madvise(addr_t UNUSED(addr), dword_t UNUSED(len), dword_t UNUSED(advice)) {
+dword_t sys_madvise(uaddr_t UNUSED(addr), dword_t UNUSED(len), dword_t UNUSED(advice)) {
     // portable applications should not rely on linux's destructive semantics for MADV_DONTNEED.
     return 0;
 }
 
-dword_t sys_mbind(addr_t UNUSED(addr), dword_t UNUSED(len), int_t UNUSED(mode),
-        addr_t UNUSED(nodemask), dword_t UNUSED(maxnode), uint_t UNUSED(flags)) {
+dword_t sys_mbind(uaddr_t UNUSED(addr), dword_t UNUSED(len), int_t UNUSED(mode),
+        uaddr_t UNUSED(nodemask), dword_t UNUSED(maxnode), uint_t UNUSED(flags)) {
     return 0;
 }
 
-int_t sys_mlock(addr_t UNUSED(addr), dword_t UNUSED(len)) {
+int_t sys_mlock(uaddr_t UNUSED(addr), dword_t UNUSED(len)) {
     return 0;
 }
 
-int_t sys_msync(addr_t UNUSED(addr), dword_t UNUSED(len), int_t UNUSED(flags)) {
+int_t sys_msync(uaddr_t UNUSED(addr), dword_t UNUSED(len), int_t UNUSED(flags)) {
     return 0;
 }
 
-addr_t sys_brk(addr_t new_brk) {
+uaddr_t sys_brk(uaddr_t new_brk) {
     STRACE("brk(0x%x)", new_brk);
     struct mm *mm = current->mm;
 

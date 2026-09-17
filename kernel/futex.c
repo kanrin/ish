@@ -152,7 +152,7 @@ int futex_wake(addr_t uaddr, dword_t wake_max) {
     return futex_wakelike(FUTEX_WAKE_, uaddr, wake_max, 0, 0);
 }
 
-dword_t sys_futex(addr_t uaddr, dword_t op, dword_t val, addr_t timeout_or_val2, addr_t uaddr2, dword_t val3) {
+dword_t sys_futex(uaddr_t uaddr, dword_t op, dword_t val, uaddr_t timeout_or_val2, uaddr_t uaddr2, dword_t val3) {
     if (!(op & FUTEX_PRIVATE_FLAG_)) {
         STRACE("!FUTEX_PRIVATE ");
     }
@@ -186,7 +186,7 @@ struct robust_list_head_ {
     addr_t list_op_pending;
 };
 
-int_t sys_set_robust_list(addr_t robust_list, dword_t len) {
+int_t sys_set_robust_list(uaddr_t robust_list, dword_t len) {
     STRACE("set_robust_list(%#x, %d)", robust_list, len);
     if (len != sizeof(struct robust_list_head_))
         return _EINVAL;
@@ -194,7 +194,7 @@ int_t sys_set_robust_list(addr_t robust_list, dword_t len) {
     return 0;
 }
 
-int_t sys_get_robust_list(pid_t_ pid, addr_t robust_list_ptr, addr_t len_ptr) {
+int_t sys_get_robust_list(pid_t_ pid, uaddr_t robust_list_ptr, uaddr_t len_ptr) {
     STRACE("get_robust_list(%d, %#x, %#x)", pid, robust_list_ptr, len_ptr);
 
     lock(&pids_lock);

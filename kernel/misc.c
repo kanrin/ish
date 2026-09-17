@@ -24,7 +24,7 @@ int_t sys_prctl(dword_t option, uint_t arg2, uint_t UNUSED(arg3), uint_t UNUSED(
     }
 }
 
-int_t sys_arch_prctl(int_t code, addr_t addr) {
+int_t sys_arch_prctl(int_t code, uaddr_t addr) {
     STRACE("arch_prctl(%#x, %#x)", code, addr);
     return _EINVAL;
 }

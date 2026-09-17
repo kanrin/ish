@@ -72,7 +72,7 @@ dword_t sys_setresuid(uid_t_ ruid, uid_t_ euid, uid_t_ suid) {
     return 0;
 }
 
-int_t sys_getresuid(addr_t ruid_addr, addr_t euid_addr, addr_t suid_addr) {
+int_t sys_getresuid(uaddr_t ruid_addr, uaddr_t euid_addr, uaddr_t suid_addr) {
     STRACE("getresuid(%#x, %#x, %#x)", ruid_addr, euid_addr, suid_addr);
     if (user_put(ruid_addr, current->uid))
         return _EFAULT;
@@ -137,7 +137,7 @@ dword_t sys_setresgid(uid_t_ rgid, uid_t_ egid, uid_t_ sgid) {
     return 0;
 }
 
-int_t sys_getresgid(addr_t rgid_addr, addr_t egid_addr, addr_t sgid_addr) {
+int_t sys_getresgid(uaddr_t rgid_addr, uaddr_t egid_addr, uaddr_t sgid_addr) {
     STRACE("getresgid(%#x, %#x, %#x)", rgid_addr, egid_addr, sgid_addr);
     if (user_put(rgid_addr, current->gid))
         return _EFAULT;
@@ -152,7 +152,7 @@ int_t sys_setregid(uid_t_ rgid, uid_t_ egid) {
     return sys_setresgid(rgid, egid, -1);
 }
 
-int_t sys_getgroups(dword_t size, addr_t list) {
+int_t sys_getgroups(dword_t size, uaddr_t list) {
     STRACE("getgroups(%d, %#x)", size, list);
     if (size == 0)
         return current->ngroups;
@@ -165,7 +165,7 @@ int_t sys_getgroups(dword_t size, addr_t list) {
     return current->ngroups;
 }
 
-int_t sys_setgroups(dword_t size, addr_t list) {
+int_t sys_setgroups(dword_t size, uaddr_t list) {
     STRACE("setgroups(%d, %#x)", size, list);
     if (size > MAX_GROUPS)
         return _EINVAL;
@@ -178,11 +178,11 @@ int_t sys_setgroups(dword_t size, addr_t list) {
 }
 
 // this does not really work
-int_t sys_capget(addr_t header_addr, addr_t data_addr) {
+int_t sys_capget(uaddr_t header_addr, uaddr_t data_addr) {
     STRACE("capget(%#x, %#x)", header_addr, data_addr);
     return 0;
 }
-int_t sys_capset(addr_t header_addr, addr_t data_addr) {
+int_t sys_capset(uaddr_t header_addr, uaddr_t data_addr) {
     STRACE("capset(%#x, %#x)", header_addr, data_addr);
     return 0;
 }

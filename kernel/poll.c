@@ -105,7 +105,7 @@ static dword_t select_common(fd_t nfds, addr_t readfds_addr, addr_t writefds_add
     return err;
 }
 
-dword_t sys_select(fd_t nfds, addr_t readfds_addr, addr_t writefds_addr, addr_t exceptfds_addr, addr_t timeout_addr) {
+dword_t sys_select(fd_t nfds, uaddr_t readfds_addr, uaddr_t writefds_addr, uaddr_t exceptfds_addr, uaddr_t timeout_addr) {
     struct timespec timeout_ts = {};
     struct timespec *timeout_ts_addr = NULL;
     if (timeout_addr != 0) {
@@ -138,7 +138,7 @@ static int poll_event_callback(void *context, int types, union poll_fd_info info
     }
     return res;
 }
-dword_t sys_poll(addr_t fds, dword_t nfds, int_t timeout) {
+dword_t sys_poll(uaddr_t fds, dword_t nfds, int_t timeout) {
     STRACE("poll(0x%x, %d, %d)", fds, nfds, timeout);
     struct pollfd_ polls[nfds];
     if (fds != 0 || nfds != 0)
@@ -214,7 +214,7 @@ dword_t sys_poll(addr_t fds, dword_t nfds, int_t timeout) {
     return res;
 }
 
-dword_t sys_pselect(fd_t nfds, addr_t readfds_addr, addr_t writefds_addr, addr_t exceptfds_addr, addr_t timeout_addr, addr_t sigmask_addr) {
+dword_t sys_pselect(fd_t nfds, uaddr_t readfds_addr, uaddr_t writefds_addr, uaddr_t exceptfds_addr, uaddr_t timeout_addr, uaddr_t sigmask_addr) {
     struct timespec_ timeout_timespec;
     struct timespec timeout_ts;
     struct timespec *timeout_ts_addr = NULL;
@@ -243,7 +243,7 @@ dword_t sys_pselect(fd_t nfds, addr_t readfds_addr, addr_t writefds_addr, addr_t
     return select_common(nfds, readfds_addr, writefds_addr, exceptfds_addr, timeout_ts_addr, "pselect");
 }
 
-dword_t sys_ppoll(addr_t fds, dword_t nfds, addr_t timeout_addr, addr_t sigmask_addr, dword_t sigsetsize) {
+dword_t sys_ppoll(uaddr_t fds, dword_t nfds, uaddr_t timeout_addr, uaddr_t sigmask_addr, dword_t sigsetsize) {
     int timeout = -1;
     if (timeout_addr != 0) {
         struct timespec_ timeout_timespec;

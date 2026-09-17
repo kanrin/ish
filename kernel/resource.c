@@ -57,7 +57,7 @@ static int do_getrlimit32(int resource, struct rlimit32_ *rlimit32) {
     return 0;
 }
 
-dword_t sys_getrlimit32(dword_t resource, addr_t rlim_addr) {
+dword_t sys_getrlimit32(dword_t resource, uaddr_t rlim_addr) {
     struct rlimit32_ rlimit;
     int err = do_getrlimit32(resource, &rlimit);
     if (err < 0)
@@ -67,7 +67,7 @@ dword_t sys_getrlimit32(dword_t resource, addr_t rlim_addr) {
     return 0;
 }
 
-dword_t sys_old_getrlimit32(dword_t resource, addr_t rlim_addr) {
+dword_t sys_old_getrlimit32(dword_t resource, uaddr_t rlim_addr) {
     struct rlimit32_ rlimit;
     int err = do_getrlimit32(resource, &rlimit);
     if (err < 0)
@@ -97,7 +97,7 @@ static int check_setrlimit(int resource, struct rlimit_ new_limit) {
     return 0;
 }
 
-dword_t sys_setrlimit32(dword_t resource, addr_t rlim_addr) {
+dword_t sys_setrlimit32(dword_t resource, uaddr_t rlim_addr) {
     struct rlimit_ rlimit;
     if (user_get(rlim_addr, rlimit))
         return _EFAULT;
@@ -108,7 +108,7 @@ dword_t sys_setrlimit32(dword_t resource, addr_t rlim_addr) {
     return rlimit_set(current, resource, rlimit);
 }
 
-dword_t sys_prlimit64(pid_t_ pid, dword_t resource, addr_t new_limit_addr, addr_t old_limit_addr) {
+dword_t sys_prlimit64(pid_t_ pid, dword_t resource, uaddr_t new_limit_addr, uaddr_t old_limit_addr) {
     STRACE("prlimit64(%d, %d)", pid, resource);
     if (pid != 0)
         return _EINVAL;
@@ -173,7 +173,7 @@ void rusage_add(struct rusage_ *dst, struct rusage_ *src) {
     timeval_add(&dst->stime, &src->stime);
 }
 
-dword_t sys_getrusage(dword_t who, addr_t rusage_addr) {
+dword_t sys_getrusage(dword_t who, uaddr_t rusage_addr) {
     struct rusage_ rusage;
     switch (who) {
         case RUSAGE_SELF_:
@@ -192,7 +192,7 @@ dword_t sys_getrusage(dword_t who, addr_t rusage_addr) {
     return 0;
 }
 
-int_t sys_sched_getaffinity(pid_t_ pid, dword_t cpusetsize, addr_t cpuset_addr) {
+int_t sys_sched_getaffinity(pid_t_ pid, dword_t cpusetsize, uaddr_t cpuset_addr) {
     STRACE("sched_getaffinity(%d, %d, %#x)", pid, cpusetsize, cpuset_addr);
     if (pid != 0) {
         lock(&pids_lock);
@@ -214,7 +214,7 @@ int_t sys_sched_getaffinity(pid_t_ pid, dword_t cpusetsize, addr_t cpuset_addr) 
     // return the number of bytes written
     return sizeof(cpuset);
 }
-int_t sys_sched_setaffinity(pid_t_ UNUSED(pid), dword_t UNUSED(cpusetsize), addr_t UNUSED(cpuset_addr)) {
+int_t sys_sched_setaffinity(pid_t_ UNUSED(pid), dword_t UNUSED(cpusetsize), uaddr_t UNUSED(cpuset_addr)) {
     // meh
     return 0;
 }
@@ -229,7 +229,7 @@ int_t sys_setpriority(int_t which, pid_t_ who, int_t prio) {
 }
 
 // realtime scheduling stubs
-int_t sys_sched_getparam(pid_t_ UNUSED(pid), addr_t param_addr) {
+int_t sys_sched_getparam(pid_t_ UNUSED(pid), uaddr_t param_addr) {
     int_t sched_priority = 0;
     if (user_put(param_addr, sched_priority))
         return _EFAULT;
@@ -239,7 +239,7 @@ int_t sys_sched_getparam(pid_t_ UNUSED(pid), addr_t param_addr) {
 int_t sys_sched_getscheduler(pid_t_ UNUSED(pid)) {
     return SCHED_OTHER_;
 }
-int_t sys_sched_setscheduler(pid_t_ UNUSED(pid), int_t policy, addr_t param_addr) {
+int_t sys_sched_setscheduler(pid_t_ UNUSED(pid), int_t policy, uaddr_t param_addr) {
     if (policy != SCHED_OTHER_)
         return _EINVAL;
     int_t sched_priority;

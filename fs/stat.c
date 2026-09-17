@@ -67,19 +67,19 @@ static dword_t sys_stat_path(fd_t at_f, addr_t path_addr, addr_t statbuf_addr, b
     return 0;
 }
 
-dword_t sys_stat64(addr_t path_addr, addr_t statbuf_addr) {
+dword_t sys_stat64(uaddr_t path_addr, uaddr_t statbuf_addr) {
     return sys_stat_path(AT_FDCWD_, path_addr, statbuf_addr, true);
 }
 
-dword_t sys_lstat64(addr_t path_addr, addr_t statbuf_addr) {
+dword_t sys_lstat64(uaddr_t path_addr, uaddr_t statbuf_addr) {
     return sys_stat_path(AT_FDCWD_, path_addr, statbuf_addr, false);
 }
 
-dword_t sys_fstatat64(fd_t at, addr_t path_addr, addr_t statbuf_addr, dword_t flags) {
+dword_t sys_fstatat64(fd_t at, uaddr_t path_addr, uaddr_t statbuf_addr, dword_t flags) {
     return sys_stat_path(at, path_addr, statbuf_addr, !(flags & AT_SYMLINK_NOFOLLOW_));
 }
 
-dword_t sys_fstat64(fd_t fd_no, addr_t statbuf_addr) {
+dword_t sys_fstat64(fd_t fd_no, uaddr_t statbuf_addr) {
     STRACE("fstat64(%d, 0x%x)", fd_no, statbuf_addr);
     struct fd *fd = f_get(fd_no);
     if (fd == NULL)
@@ -94,7 +94,7 @@ dword_t sys_fstat64(fd_t fd_no, addr_t statbuf_addr) {
     return 0;
 }
 
-dword_t sys_statx(fd_t at_f, addr_t path_addr, int_t flags, uint_t mask, addr_t statx_addr) {
+dword_t sys_statx(fd_t at_f, uaddr_t path_addr, int_t flags, uint_t mask, uaddr_t statx_addr) {
     char path[MAX_PATH];
     if (user_read_string(path_addr, path, sizeof(path)))
         return _EFAULT;

@@ -674,7 +674,7 @@ static ssize_t user_read_string_array(addr_t addr, char *buf, size_t max) {
     return i;
 }
 
-dword_t sys_execve(addr_t filename_addr, addr_t argv_addr, addr_t envp_addr) {
+dword_t sys_execve(uaddr_t filename_addr, uaddr_t argv_addr, uaddr_t envp_addr) {
     char filename[MAX_PATH];
     if (user_read_string(filename_addr, filename, sizeof(filename)))
         return _EFAULT;
