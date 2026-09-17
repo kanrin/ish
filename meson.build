@@ -87,6 +87,7 @@ if get_option('kernel') == 'ish'
         'kernel/calls.c',
         'kernel/memory.c',
         'kernel/user.c',
+        'kernel/native.c',
         'kernel/vdso.c', vdso,
         'kernel/task.c',
         'kernel/group.c',

@@ -58,6 +58,10 @@ struct task *task_create_(struct task *parent) {
     *task = (struct task) {};
     if (parent != NULL)
         *task = *parent;
+    // Native-ness belongs to the image that is running, so it is decided by
+    // exec and never inherited from the parent (see native-mm, M5).
+    task->native = false;
+    task->native_mm = NULL;
     task->pid = pid->id;
     pid->task = task;
 

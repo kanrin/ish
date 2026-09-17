@@ -261,22 +261,27 @@ void dump_stack(int lines);
 // handle_interrupt() below is the i386 guest's caller: it unpacks the syscall
 // number and the arguments out of struct cpu_state and truncates the result
 // back into eax. A native (in-process) userland calls this directly instead of
-// going through the guest CPU state at all, which is why it is deliberately
-// not tied to the i386 register layout.
-// TODO(native): widen the arguments and the result so native callers can pass
-// host pointers instead of 32-bit guest addresses (M4: uaddr_t).
-dword_t do_syscall(unsigned syscall_num, dword_t arg1, dword_t arg2, dword_t arg3,
-        dword_t arg4, dword_t arg5, dword_t arg6) {
+// going through the guest CPU state at all, which is why the types here are
+// wide enough for host pointers (see uaddr_t in misc.h).
+uint64_t do_syscall(unsigned syscall_num, uint64_t arg1, uint64_t arg2, uint64_t arg3,
+        uint64_t arg4, uint64_t arg5, uint64_t arg6) {
     if (syscall_num >= NUM_SYSCALLS || syscall_table[syscall_num] == NULL) {
         printk("%d(%s) missing syscall %d\n", current->pid, current->comm, syscall_num);
-        return _ENOSYS;
+        return (uint64_t) (int64_t) _ENOSYS;
     }
     if (syscall_table[syscall_num] == (syscall_t) syscall_stub) {
         printk("%d(%s) stub syscall %d\n", current->pid, current->comm, syscall_num);
     }
     STRACE("%d call %-3d ", current->pid, syscall_num);
-    int result = syscall_table[syscall_num](arg1, arg2, arg3, arg4, arg5, arg6);
-    STRACE(" = 0x%x\n", result);
+    uint64_t result = syscall_table[syscall_num](arg1, arg2, arg3, arg4, arg5, arg6);
+    // A 32-bit guest can only ever observe the low 32 bits (that is what
+    // handle_interrupt() puts in eax) and a callee that declares a 32-bit
+    // return type is free to leave the upper bits of the return register
+    // unspecified, so normalize before logging or handing the value back.
+    // Native callers get the raw value and interpret it per syscall.
+    if (!current->native)
+        result = (dword_t) result;
+    STRACE(" = 0x%x\n", (dword_t) result);
     return result;
 }
 

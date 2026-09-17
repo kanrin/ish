@@ -111,6 +111,16 @@ typedef uint16_t word_t;
 typedef uint8_t byte_t;
 
 typedef dword_t addr_t;
+// A user pointer as seen at the syscall boundary.
+//
+// addr_t is a *guest* virtual address and stays 32 bits wide on purpose: it is
+// what the emulator, the TLB, the page tables and the guest-visible memory
+// layouts (struct iovec etc.) all use. uaddr_t is the type syscall parameters
+// and user memory accesses are expressed in, so that a caller which is not a
+// 32-bit guest -- the native in-process userland -- can pass host pointers.
+// For a guest task the two are interchangeable: the value is zero-extended on
+// the way in and truncated on the way out, exactly as before.
+typedef uint64_t uaddr_t;
 typedef dword_t uint_t;
 typedef sdword_t int_t;
 

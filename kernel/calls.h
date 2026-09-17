@@ -18,16 +18,23 @@ void handle_interrupt(int interrupt);
 
 // Entry point for system calls that does not depend on struct cpu_state.
 // See the definition in kernel/calls.c for the rationale.
-dword_t do_syscall(unsigned syscall_num, dword_t arg1, dword_t arg2, dword_t arg3,
-        dword_t arg4, dword_t arg5, dword_t arg6);
+//
+// Returns the raw syscall result. Interpretation depends on the caller: a
+// 32-bit guest only uses the low 32 bits (that is what handle_interrupt()
+// stores into eax), while a native caller casts it to whatever type its own
+// ABI gives that syscall. Syscalls that hand out user addresses return
+// uaddr_t so that native callers see all 64 bits; everything else is
+// effectively 32 bits wide and may have unspecified high bits.
+uint64_t do_syscall(unsigned syscall_num, uint64_t arg1, uint64_t arg2, uint64_t arg3,
+        uint64_t arg4, uint64_t arg5, uint64_t arg6);
 
-int must_check user_read(addr_t addr, void *buf, size_t count);
-int must_check user_write(addr_t addr, const void *buf, size_t count);
-int must_check user_read_task(struct task *task, addr_t addr, void *buf, size_t count);
-int must_check user_write_task(struct task *task, addr_t addr, const void *buf, size_t count);
-int must_check user_write_task_ptrace(struct task *task, addr_t addr, const void *buf, size_t count);
-int must_check user_read_string(addr_t addr, char *buf, size_t max);
-int must_check user_write_string(addr_t addr, const char *buf);
+int must_check user_read(uaddr_t addr, void *buf, size_t count);
+int must_check user_write(uaddr_t addr, const void *buf, size_t count);
+int must_check user_read_task(struct task *task, uaddr_t addr, void *buf, size_t count);
+int must_check user_write_task(struct task *task, uaddr_t addr, const void *buf, size_t count);
+int must_check user_write_task_ptrace(struct task *task, uaddr_t addr, const void *buf, size_t count);
+int must_check user_read_string(uaddr_t addr, char *buf, size_t max);
+int must_check user_write_string(uaddr_t addr, const char *buf);
 #define user_get(addr, var) user_read(addr, &(var), sizeof(var))
 #define user_put(addr, var) user_write(addr, &(var), sizeof(var))
 #define user_get_task(task, addr, var) user_read_task(task, addr, &(var), sizeof(var))
@@ -260,6 +267,12 @@ dword_t sys_getrandom(addr_t buf_addr, dword_t len, dword_t flags);
 int_t sys_syslog(int_t type, addr_t buf_addr, int_t len);
 int_t sys_ipc(uint_t call, int_t first, int_t second, int_t third, addr_t ptr, int_t fifth);
 
-typedef int (*syscall_t)(dword_t, dword_t, dword_t, dword_t, dword_t, dword_t);
+// The 400-odd implementations above have their own, per-ABI signatures and are
+// called through this generic one. Every platform iSH targets passes integer
+// arguments in registers that are at least 64 bits wide, so a callee that
+// declares a 32-bit parameter simply ignores the upper bits, and a callee that
+// declares a uaddr_t parameter receives the whole host pointer. Widening here
+// is what lets a native caller and a 32-bit guest share one table.
+typedef uint64_t (*syscall_t)(uint64_t, uint64_t, uint64_t, uint64_t, uint64_t, uint64_t);
 
 #endif

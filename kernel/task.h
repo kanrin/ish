@@ -21,6 +21,14 @@ struct task {
     pthread_t thread;
     uint64_t threadid;
 
+    // A native task runs host code in this process instead of emulated guest
+    // code: its memory is ordinary host memory (see kernel/native.h) and its
+    // system calls go through do_syscall() directly. Nothing marks a task
+    // native yet -- see the native-mm work (M5) -- and this is deliberately
+    // *not* inherited by children: exec decides it.
+    bool native;
+    struct native_mm *native_mm;
+
     struct tgroup *group; // immutable
     struct list group_links;
     pid_t_ pid, tgid; // immutable
