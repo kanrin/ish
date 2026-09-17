@@ -256,22 +256,34 @@ syscall_t syscall_table[] = {
 
 void dump_stack(int lines);
 
+// The single entry point for system calls, decoupled from the guest CPU state.
+//
+// handle_interrupt() below is the i386 guest's caller: it unpacks the syscall
+// number and the arguments out of struct cpu_state and truncates the result
+// back into eax. A native (in-process) userland calls this directly instead of
+// going through the guest CPU state at all, which is why it is deliberately
+// not tied to the i386 register layout.
+// TODO(native): widen the arguments and the result so native callers can pass
+// host pointers instead of 32-bit guest addresses (M4: uaddr_t).
+dword_t do_syscall(unsigned syscall_num, dword_t arg1, dword_t arg2, dword_t arg3,
+        dword_t arg4, dword_t arg5, dword_t arg6) {
+    if (syscall_num >= NUM_SYSCALLS || syscall_table[syscall_num] == NULL) {
+        printk("%d(%s) missing syscall %d\n", current->pid, current->comm, syscall_num);
+        return _ENOSYS;
+    }
+    if (syscall_table[syscall_num] == (syscall_t) syscall_stub) {
+        printk("%d(%s) stub syscall %d\n", current->pid, current->comm, syscall_num);
+    }
+    STRACE("%d call %-3d ", current->pid, syscall_num);
+    int result = syscall_table[syscall_num](arg1, arg2, arg3, arg4, arg5, arg6);
+    STRACE(" = 0x%x\n", result);
+    return result;
+}
+
 void handle_interrupt(int interrupt) {
     struct cpu_state *cpu = &current->cpu;
     if (interrupt == INT_SYSCALL) {
-        unsigned syscall_num = cpu->eax;
-        if (syscall_num >= NUM_SYSCALLS || syscall_table[syscall_num] == NULL) {
-            printk("%d(%s) missing syscall %d\n", current->pid, current->comm, syscall_num);
-            cpu->eax = _ENOSYS;
-        } else {
-            if (syscall_table[syscall_num] == (syscall_t) syscall_stub) {
-                printk("%d(%s) stub syscall %d\n", current->pid, current->comm, syscall_num);
-            }
-            STRACE("%d call %-3d ", current->pid, syscall_num);
-            int result = syscall_table[syscall_num](cpu->ebx, cpu->ecx, cpu->edx, cpu->esi, cpu->edi, cpu->ebp);
-            STRACE(" = 0x%x\n", result);
-            cpu->eax = result;
-        }
+        cpu->eax = do_syscall(cpu->eax, cpu->ebx, cpu->ecx, cpu->edx, cpu->esi, cpu->edi, cpu->ebp);
     } else if (interrupt == INT_GPF) {
         // some page faults, such as stack growing or CoW clones, are handled by mem_ptr
         read_wrlock(&current->mem->lock);

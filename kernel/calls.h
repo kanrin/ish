@@ -16,6 +16,11 @@
 
 void handle_interrupt(int interrupt);
 
+// Entry point for system calls that does not depend on struct cpu_state.
+// See the definition in kernel/calls.c for the rationale.
+dword_t do_syscall(unsigned syscall_num, dword_t arg1, dword_t arg2, dword_t arg3,
+        dword_t arg4, dword_t arg5, dword_t arg6);
+
 int must_check user_read(addr_t addr, void *buf, size_t count);
 int must_check user_write(addr_t addr, const void *buf, size_t count);
 int must_check user_read_task(struct task *task, addr_t addr, void *buf, size_t count);
