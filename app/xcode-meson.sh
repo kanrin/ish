@@ -1,7 +1,16 @@
 #!/bin/bash
 
 # Try to figure out the user's PATH to pick up their installed utilities.
-export PATH="$PATH:$(sudo -u "$USER" -i printenv PATH)"
+export PATH="$PATH:$(sudo -u "$USER" -i printenv PATH 2>/dev/null)"
+# The line above needs sudo, which fails in a non-interactive build (no tty to
+# ask for a password) and is denied outright when script sandboxing is on. So
+# fall back to the usual locations of Homebrew's meson/ninja, which is what the
+# sudo lookup was for in the first place.
+if ! command -v meson >/dev/null 2>&1 || ! command -v ninja >/dev/null 2>&1; then
+    for p in /opt/homebrew/bin /usr/local/bin "$HOME/.local/bin"; do
+        [ -d "$p" ] && export PATH="$PATH:$p"
+    done
+fi
 
 mkdir -p "$MESON_BUILD_DIR"
 cd "$MESON_BUILD_DIR"
