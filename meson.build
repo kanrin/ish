@@ -49,6 +49,10 @@ emu_src = [
     'emu/vec.c',
     'emu/mmx.c',
     'emu/float80.c',
+    # The AArch64 engine's own pieces. They are built even while the engine
+    # itself is still being written, because the 64-bit memory model can be
+    # tested on its own (see the a64_mem_test target below).
+    'emu/a64/cache.c',
 
 ]
 gadgets = 'asbestos/gadgets-' + host_machine.cpu_family()
@@ -86,6 +90,7 @@ if get_option('kernel') == 'ish'
 
         'kernel/calls.c',
         'kernel/memory.c',
+        'kernel/memory64.c',
         'kernel/user.c',
         'kernel/native.c',
         'kernel/vdso.c', vdso,
@@ -164,6 +169,14 @@ if get_option('kernel') == 'ish'
 
     if not meson.is_cross_build()
         executable('ish', ['main.c'], dependencies: ish)
+    endif
+
+    # The AArch64 engine's 64-bit address space, tested on its own: the
+    # interpreter that will drive it does not exist yet (see emu/a64/), so this
+    # is how the page table, copy-on-write and stack growth are verified.
+    if not meson.is_cross_build()
+        a64_mem_test = executable('a64_mem_test', ['tests/a64-mem-test.c'], dependencies: ish)
+        test('a64_mem', a64_mem_test)
     endif
 
 elif get_option('kernel') == 'linux'
